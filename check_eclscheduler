@@ -1,0 +1,25 @@
+#!/usr/bin/python
+
+import sys, os
+
+IP = sys.argv[1]
+cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLScheduler\"'" % IP
+
+check_remote = os.popen(cmd).readline().replace('|','').replace('\n','')
+
+try:
+
+        if "is running" in check_remote.split('-')[1]:
+                print check_remote.split('-')[1] 
+                sys.exit(0)
+        elif "is stopped" in check_remote.split('-')[1]:
+                print check_remote.split('-')[1] 
+                sys.exit(2)
+	else:
+		print "Unknown status"
+		sys.exit(1)
+
+except ValueError:
+        print "Unable to connect to server or SNMP down"
+        sys.exit(2)
+

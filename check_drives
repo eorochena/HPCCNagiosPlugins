@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+import os, sys
+
+IP = sys.argv[1]
+
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"drives\"'|awk -F'STRING:' '{print $2}'" % IP
+run_cmd = os.popen(cmd).readline().strip()
+if "OK" in run_cmd:
+	print run_cmd
+	sys.exit(0)
+elif "CRITICAL" in run_cmd:
+	print run_cmd
+	sys.exit(2)
+elif "WARNING" in run_cmd:
+	print run_cmd
+	sys.exit(1)
+elif "UNKNOWN" in run_cmd:
+	print run_cmd
+	sys.exit(1)
+else:
+	print "Unknown Status"
+	sys.exit(1)

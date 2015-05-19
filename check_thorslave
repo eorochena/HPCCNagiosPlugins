@@ -1,0 +1,22 @@
+#!/usr/bin/python
+
+import sys, os
+
+IP = sys.argv[1]
+cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
+
+check_remote = os.popen(cmd).readline()
+
+try:
+
+        if "ThorSlave not running" in check_remote.split('-')[1]:
+                print "WARNING - ThorSlave process appears not to be running" 
+                sys.exit(1)
+        elif "ThorSlave is running" in check_remote.split('-')[1]:
+                print "ThorSlave OK" 
+                sys.exit(0)
+
+except ValueError:
+        print "Unable to connect to server or SNMP down"
+        sys.exit(2)
+

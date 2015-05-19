@@ -1,0 +1,31 @@
+#!/usr/bin/python
+
+import sys, os
+
+IP = sys.argv[1]
+cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $8}'" % IP
+cmd_remaining = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"' |awk '{print $7}'" % IP
+
+# Get use percentage
+check_remote = os.popen(cmd).readline().strip()
+
+# Get remaining space
+check_remote_remaining = os.popen(cmd_remaining).readline().strip()
+
+try:
+        output = int(check_remote.strip('%'))
+
+        if output >= 85 and output <= 89:
+                print "WARNING - %s of disk space has been used with only %s free" % (check_remote, check_remote_remaining)
+                sys.exit(1)
+        elif output >= 90 and output <= 100:
+                print "CRITICAL - %s of disk space has been used with only %s free" % (check_remote, check_remote_remaining)
+                sys.exit(2)
+        elif output <= 84:
+                print "disk OK - %s of disk space has been used with %s free" % (check_remote, check_remote_remaining)
+                sys.exit(0)
+
+except ValueError:
+        print "Unable to connect to server or SNMP down"
+        sys.exit(2)
+
