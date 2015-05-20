@@ -1,2 +1,1 @@
-# HPCCNagiosPlugins
-HPCC Nagios plugins for remote SNMP calls
+Temporary HPCC Nagios plugins for remote SNMP calls
