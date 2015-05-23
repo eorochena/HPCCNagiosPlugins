@@ -1,9 +1,15 @@
 #!/usr/bin/python
 
-import sys, os
+import sys, os, platform
 
 IP = sys.argv[1]
-cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"DFUServer\"'" % IP
+
+if platform.dist()[0] == 'Ubuntu':
+        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"DFUServer\"'" % IP
+elif platform.dist()[0] == 'CentOS':
+        cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"DFUServer\"'" % IP
+elif platform.dist()[0] == 'LinuxMint':
+        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"DFUServer\"'" % IP
 
 check_remote = os.popen(cmd).readline().replace('|','').replace('\n','')
 

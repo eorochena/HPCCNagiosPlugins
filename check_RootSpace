@@ -1,10 +1,22 @@
 #!/usr/bin/python
 
-import sys, os
+import sys, os, platform
 
 IP = sys.argv[1]
-cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $8}'" % IP
-cmd_remaining = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"' |awk '{print $7}'" % IP
+
+if platform.dist()[0] == 'Ubuntu':
+        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $8}'" % IP
+elif platform.dist()[0] == 'CentOS':
+        cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $8}'" % IP
+elif platform.dist()[0] == 'LinuxMint':
+        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $8}'" % IP
+
+if platform.dist()[0] == 'Ubuntu':
+        cmd_remaining = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $7}'" % IP
+elif platform.dist()[0] == 'CentOS':
+        cmd_remaining = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $7}'" % IP
+elif platform.dist()[0] == 'LinuxMint':
+        cmd_remaining = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"rootSpace\"'|awk '{print $7}'" % IP
 
 # Get use percentage
 check_remote = os.popen(cmd).readline().strip()
