@@ -1,0 +1,42 @@
+#!/usr/bin/python
+
+import sys, os, platform, random
+
+IP = sys.argv[1]
+test_range = range(1, 5)
+
+if platform.dist()[0] == 'Ubuntu':
+	cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % IP
+elif platform.dist()[0] == 'CentOS':
+        cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % IP
+elif platform.dist()[0] == 'LinuxMint':
+        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % IP
+else:
+	cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % IP
+
+check_remote = os.popen(cmd).readline().replace('\n', '')
+print check_remote
+
+runs = 0
+goodCount = 0
+badCount = 0
+
+while runs < 5:
+	test_ip = random.choice(test_range)
+	randomIP = IP[:-1] + str(test_ip)
+	cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % randomIP
+	check_random = os.popen(cmd).readline().replace('\n', '')
+	print check_random
+	runs = runs + 1
+
+	if check_random == check_remote:
+		goodCount = +1
+	else:
+		badCount = +1
+	
+if goodCount > badCount:
+	sys.exit(0)
+elif goodCount < badCount:
+	sys.exit(1)
+else:
+	sys.exit(1)
