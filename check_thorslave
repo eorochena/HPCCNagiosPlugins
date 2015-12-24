@@ -4,12 +4,7 @@ import sys, os, platform
 
 IP = sys.argv[1]
 
-if platform.dist()[0] == 'Ubuntu':
-        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
-elif platform.dist()[0] == 'CentOS':
-        cmd = "/usr/local/nagios/libexec/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
-elif platform.dist()[0] == 'LinuxMint':
-        cmd = "/usr/lib/nagios/plugins/check_snmp -P 2c -H %s -C ObviouslyThisIsNotMyCommunityString -o NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
 
 check_remote = os.popen(cmd).readline()
 
