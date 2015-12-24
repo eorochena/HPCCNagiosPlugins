@@ -4,17 +4,17 @@ import sys, os, platform
 
 IP = sys.argv[1]
 
-cmd = "snmp -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLCServer\"'" % IP
+cmd = "snmp -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLCServer\"'|awk -F'STRING:' '{print $2}'" % IP
 
 check_remote = os.popen(cmd).readline().replace('|','').replace('\n','')
 
 try:
 
-        if "is running" in check_remote.split('-')[1]:
-                print check_remote.split('-')[1] 
+        if "is running" in check_remote:
+                print check_remote 
                 sys.exit(0)
-        elif "is stopped" in check_remote.split('-')[1]:
-                print check_remote.split('-')[1] 
+        elif "is stopped" in check_remote:
+                print check_remote
                 sys.exit(2)
 	else:
 		print "Unknown status"
