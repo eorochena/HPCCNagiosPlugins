@@ -5,31 +5,39 @@ import sys, os, platform, random
 IP = sys.argv[1]
 test_range = range(1, 5)
 
-cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % IP
-
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'STRING: ' '{print $2}'" % IP
+get_buddies = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"Buddies\"'|awk -F'STRING: ' '{print $2}'" % IP
 check_remote = os.popen(cmd).readline().replace('\n', '')
-print check_remote
+cmd_buddies = os.popen(get_buddies).readline().replace('\n','')
+
+buddies = cmd_buddies.split(',')
 
 runs = 0
 goodCount = 0
 badCount = 0
+ip_list = []
 
-while runs < 5:
-	test_ip = random.choice(test_range)
-	randomIP = IP[:-1] + str(test_ip)
-	cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'|' '{print $1}'" % randomIP
-	check_random = os.popen(cmd).readline().replace('\n', '')
-	print check_random
-	runs = runs + 1
-
-	if check_random == check_remote:
-		goodCount = +1
+while runs < len(buddies):
+	randomIP = random.choice(buddies)
+	if randomIP in ip_list:
+		continue
 	else:
-		badCount = +1
+		ip_list.append(randomIP)
+		cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'STRING: ' '{print $2}'" % randomIP
+		check_random = os.popen(cmd).readline().replace('\n', '')
+		runs += 1
+
+		if check_random == check_remote:
+			goodCount += 1
+		else:
+			badCount += 1
 	
 if goodCount > badCount:
+	print "All good, I hope, showing %sG of installed memory" % check_remote
 	sys.exit(0)
 elif goodCount < badCount:
+	print "Missing memory, showing %sG of installed memory" % check_remote
 	sys.exit(1)
 else:
+	print "Unknown status"
 	sys.exit(1)
