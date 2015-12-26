@@ -17,7 +17,7 @@ goodCount = 0
 badCount = 0
 ip_list = []
 
-while runs < len(buddies):
+while runs < len(buddies) and runs <= 5:
 	randomIP = random.choice(buddies)
 	if randomIP in ip_list:
 		continue
