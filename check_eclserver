@@ -4,9 +4,9 @@ import sys, os, platform
 
 IP = sys.argv[1]
 
-cmd = "snmpd -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLCServer\"'|awk -F'STRING:' '{print $2}'" % IP
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLCServer\"'|awk -F'STRING:' '{print $2}'" % IP
 
-check_remote = os.popen(cmd).readline().replace('|','').replace('\n','')
+check_remote = os.popen(cmd).readline()
 
 try:
 
