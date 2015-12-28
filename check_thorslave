@@ -4,16 +4,16 @@ import sys, os, platform
 
 IP = sys.argv[1]
 
-cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'" % IP
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ThorSlave\"'|awk -F'STRING: ' '{print $2}'" % IP
 
 check_remote = os.popen(cmd).readline()
 
 try:
 
-        if "ThorSlave not running" in check_remote.split('-')[1]:
+        if "ThorSlave not running" in check_remote:
                 print "WARNING - ThorSlave process appears not to be running" 
                 sys.exit(1)
-        elif "ThorSlave is running" in check_remote.split('-')[1]:
+        elif "ThorSlave is running" in check_remote:
                 print "ThorSlave OK" 
                 sys.exit(0)
 
