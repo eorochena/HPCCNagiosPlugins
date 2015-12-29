@@ -11,7 +11,7 @@ check_remote = os.popen(cmd).readline().replace('|','').replace('\n','')
 try:
 
         if "is running" in check_remote:
-                print check_remote.split 
+                print check_remote 
                 sys.exit(0)
         elif "is stopped" in check_remote:
                 print check_remote 
