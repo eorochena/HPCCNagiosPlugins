@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+import os, sys
+
+IP = sys.argv[1]
+
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"Bonding\"'|awk -F'STRING:' '{print $2}'" % IP
+run_cmd = os.popen(cmd).readline().strip()
+
+if "down" in run_cmd.split('--')[0] or "down" in run_cmd.split('--')[1]:
+	print "Bond interface is Half Duplex ", run_cmd
+	sys.exit(1)
+elif "up" in run_cmd.split('--')[0] and "up" in run_cmd.split('--')[1]:
+	print "Bond interface is Full Duplex ", run_cmd
+	sys.exit(0)
+else:
+	print "Unknown Status"
+	sys.exit(1)
