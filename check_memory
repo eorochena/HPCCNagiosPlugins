@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import sys, os, platform, random
+
+IP = sys.argv[1]
+test_range = range(1, 5)
+
+cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'STRING: ' '{print $2}'" % IP
+get_buddies = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"Siblings\"'|awk -F'STRING: ' '{print $2}'" % IP
+check_remote = os.popen(cmd).readline().replace('\n', '')
+cmd_buddies = os.popen(get_buddies).readline().replace('\n','')
+
+buddies = cmd_buddies.split(',')
+
+runs = 0
+goodCount = 0
+badCount = 0
+ip_list = []
+memory_count = []
+
+while runs < len(buddies) and runs <= 5:
+	randomIP = random.choice(buddies)
+	if randomIP in ip_list:
+		continue
+	else:
+		ip_list.append(randomIP)
+		cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"CheckMem\"'|awk -F'STRING: ' '{print $2}'" % randomIP
+		check_random = os.popen(cmd).readline().replace('\n', '')
+		memory_count.append(int(check_random))
+		runs += 1
+
+		if check_random == check_remote:
+			goodCount += 1
+		else:
+			badCount += 1
+
+average_memory_value = reduce(lambda x, y: x + y, memory_count) / len(memory_count)
+	
+if goodCount > badCount:
+	print "All good, I hope, showing %sG of installed memory" % check_remote
+	sys.exit(0)
+elif goodCount < badCount:
+	if average_memory_value < int(check_remote):
+		print "The Grinch has put more memory on this server, is showing %sGb instead of %sGb!!?" % (check_remote, average_memory_value)
+		sys.exit(1)
+	elif average_memory_value > int(check_remote):
+		print "Missing memory, showing %sG of installed memory" % check_remote
+		sys.exit(1)
+else:
+	print "Unknown status"
+	sys.exit(1)
