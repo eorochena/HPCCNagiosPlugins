@@ -16,6 +16,9 @@ try:
         elif "ThorSlave is running" in check_remote:
                 print "ThorSlave OK" 
                 sys.exit(0)
+        else:
+                print "Unable to connect to server or SNMP down"
+                sys.exit(2)
 
 except ValueError:
         print "Unable to connect to server or SNMP down"
