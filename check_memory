@@ -42,7 +42,7 @@ if goodCount > badCount:
 elif goodCount < badCount:
 	if average_memory_value < int(check_remote):
 		print "The Grinch has put more memory on this server, is showing %sGb instead of %sGb!!?" % (check_remote, average_memory_value)
-		sys.exit(1)
+		sys.exit(0)
 	elif average_memory_value > int(check_remote):
 		print "Missing memory, showing %sG of installed memory" % check_remote
 		sys.exit(1)
