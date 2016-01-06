@@ -10,11 +10,11 @@ check_remote = os.popen(cmd).readline()
 
 try:
 
-        if "ThorSlave not running" in check_remote:
-                print "WARNING - ThorSlave process appears not to be running" 
+        if "down" in check_remote:
+                print "WARNING - ", check_remote 
                 sys.exit(1)
-        elif "ThorSlave is running" in check_remote:
-                print "ThorSlave OK" 
+        elif "running" in check_remote:
+                print "ThorSlave OK - ", check_remote 
                 sys.exit(0)
         else:
                 print "Unable to connect to server or SNMP down"
