@@ -1,0 +1,64 @@
+#!/usr/bin/python
+
+import sys, os, re
+
+IP = sys.argv[1]
+test_range = range(1, 5)
+
+cmd = "testsocket %s \"<control:state/>\"|grep hash|awk '{print $3}'" % IP
+get_sisters = "snmpget -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"Siblings\"'|awk -F'STRING: ' '{print $2}'" % IP
+check_remote = os.popen(cmd).readlines()
+cmd_sisters = os.popen(get_sisters).readline().replace('\n','')
+
+sisters = cmd_sisters.split(',')
+
+try:
+	if check_remote:
+		for i in check_remote:
+			if re.search('hash', i):
+				revision = re.sub('[\'/>hash=]+', '', i)
+	else:
+		print "Unable to connect to server or SNMP down - if server is healthy try: sudo /etc/init.d/snmpd restart"
+
+	runs = 0
+	goodCount = 0
+	badCount = 0
+	ip_list = []
+	revisions = []
+
+	for ip in sisters:
+		try:
+			cmd = "testsocket %s \"<control:state/>\"|grep hash|awk '{print $3}'" % ip
+			check_sister = os.popen(cmd).readlines()
+
+			for i in check_sister:
+				if re.search('hash', i):
+	                		sister_revision = re.sub('[\'/>hash=]+', '', i)
+					revisions.append(sister_revision)
+
+		except:
+			continue
+	
+	number_revisions = len(revisions)
+	same_revision = []
+	different_revision = []
+
+	while number_revisions > 0:
+		for i in revisions:
+			if revision == i:
+				same_revision.append(i)
+				number_revisions -= 1
+			else:
+				different_revision(i)
+				number_revisions -= 1
+
+	if len(same_revision) > len(different_revision) and revision in same_revision:
+		print revision
+		sys.exit(0)
+	elif len(same_revision) < len(different_revision) and revision in same_revision:
+		print revision," - revision mismatch"
+		sys.exit(2)
+
+except ValueError:
+	print "Unable to connect to server or SNMP down - if server is healthy try: sudo /etc/init.d/snmpd restart"
+	sys.exit(2)
