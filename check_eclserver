@@ -4,23 +4,25 @@ import sys, os, platform
 
 IP = sys.argv[1]
 
-cmd = "snmpwalk -v 2c -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLCServer\"'|awk -F'STRING:' '{print $2}'" % IP
+cmd = "snmpget -v 2c -t 3 -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"ECLServer\"'|awk -F'STRING:' '{print $2}'" % IP
 
-check_remote = os.popen(cmd).readline()
+check_remote = os.popen(cmd).readline().replace('\n', '')
 
 try:
 
-        if "is running" in check_remote:
+        if "is stopped" in check_remote:
+		for i in check_remote.split('...'):
+			if "is stopped" in i:
+                		print i.split('stopped')[0],"stopped - if server is healthy try: sudo /etc/init.d/hpcc-init -c <eclserver-name> start"
+                		sys.exit(2)
+        elif "is running" in check_remote:
                 print check_remote 
                 sys.exit(0)
-        elif "is stopped" in check_remote:
-                print check_remote
-                sys.exit(2)
 	else:
 		print "Unknown status"
 		sys.exit(1)
 
 except ValueError:
-        print "Unable to connect to server or SNMP down"
+        print "Unable to connect to server or SNMP down - if server is healthy try: sudo /etc/init.d/snmpd restart"
         sys.exit(2)
 
