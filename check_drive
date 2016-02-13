@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+import sys, os
+
+IP = sys.argv[1]
+
+cmd = "snmpget -v 2c -t 5 -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_drive\"'|awk -F'STRING: ' '{print $2}'" % IP
+run_cmd = os.popen(cmd).readline().replace('\n', '')
+
+if "I/0" in run_cmd or "sense" in run_cmd or "SCSI" in run_cmd:
+	print run_cmd," - possible bad hard drive please validate error by checking the ring buffer with: dmesg"
+	sys.exit(1)
+else:
+	print "No drive errors detected"
+	sys.exit(0)
