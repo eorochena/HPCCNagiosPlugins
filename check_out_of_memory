@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+import sys, os
+
+IP = sys.argv[1]
+
+cmd = "snmpget -v 2c -t 5 -c ObviouslyThisIsNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_out_of_memory\"'|awk -F'STRING: ' '{print $2}'" % IP
+run_cmd = os.popen(cmd).readline().replace('\n', '')
+
+if "Out of memory" in run_cmd:
+	print run_cmd," - possible Out of memory condition, please validate error by checking the ring buffer with: dmesg"
+	sys.exit(1)
+else:
+	print "No Out of memory detected"
+	sys.exit(0)
