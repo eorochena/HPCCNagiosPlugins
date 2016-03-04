@@ -19,6 +19,7 @@ try:
 				revision = re.sub('[\'/>hash=]+', '', i)
 	else:
 		print "Unable to connect to server or SNMP down - if server is healthy try: sudo /etc/init.d/snmpd restart"
+		sys.exit(2)
 
 	runs = 0
 	goodCount = 0
