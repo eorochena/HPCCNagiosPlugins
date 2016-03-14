@@ -1,0 +1,25 @@
+#!/usr/bin/python
+
+import os, sys
+
+IP = sys.argv[1]
+Bad = []
+cmd = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"raid_svn_2\"'|awk -F'Drive' '{print $2}'" % IP
+
+try:
+        run_cmd = os.popen(cmd).readlines()
+
+        for i in run_cmd:
+                if "Failed" in i or "Unconfigured" in i:
+                        Bad.append(i.replace('\n', ''))
+                else:
+                        continue
+        if len(Bad) >= 1:
+                print Bad, " Possible bad drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
+                sys.exit(2)
+        else:
+                print "All good"
+                sys.exit(0)
+except ValueError:
+        print "Unable to connect to server or Raid Controller is unresponsive - if server is healthy verify status with /opt/MegaRAID/MegaCli/check_drives.sh"
+        sys.exit(2)
