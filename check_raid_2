@@ -12,6 +12,12 @@ try:
         for i in run_cmd:
                 if "Failed" in i or "Unconfigured" in i:
                         Bad.append(i.replace('\n', ''))
+                elif "Missing" in i:
+                        print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
+                        sys.exit(2)
+                elif "Property" in i:
+                        print "Property not configured"
+                        sys.exit(2)
                 else:
                         continue
         if len(Bad) >= 1:
