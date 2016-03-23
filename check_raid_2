@@ -4,28 +4,43 @@ import os, sys
 
 IP = sys.argv[1]
 Bad = []
-cmd = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"raid_svn_2\"'|awk -F'Drive' '{print $2}'" % IP
+cmd = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'Drive' '{print $2}'" % IP
+cmdFull = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'STRING:' '{print $2}'" % IP
+run_cmdFull = os.popen(cmdFull).readlines()
 
 try:
-        run_cmd = os.popen(cmd).readlines()
+        if "Drive" in run_cmdFull[0]:
+                run_cmd = os.popen(cmd).readlines()
 
-        for i in run_cmd:
-                if "Failed" in i or "Unconfigured" in i:
-                        Bad.append(i.replace('\n', ''))
-                elif "Missing" in i:
-                        print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
-                        sys.exit(2)
-                elif "property" in i:
-                        print "SVN property not configured"
-                        sys.exit(2)
-                elif "not found" in i or "offline" in i:
-                        print cmd
-                        sys.exit(2)
-                else:
-                        continue
-        if len(Bad) >= 1:
+                for i in run_cmd:
+                        if "Failed" in i or "Unconfigured" in i:
+                                Bad.append(i.replace('\n', ''))
+                        elif "Rebuild" in i:
+                                Rebuild.append(i.replace('\n', ''))
+                        else:
+                                continue
+        else:
+                for i in run_cmdFull:
+                        
+                        if "Missing" in i:
+                                print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
+                                sys.exit(2)
+                        elif "property" in i:
+                                print "SVN property not configured"
+                                sys.exit(2)
+                        elif "not found" in i or "offline" in i:
+                                print cmd
+                                sys.exit(2)
+                                
+        if len(Bad) >= 1 and len(Rebuild) >= 1:
+                print "Something appears to be very wrong, please verify with /opt/MegaRAID/MegaCli/check_drives.sh \n",run_cmd
+                sys.exit(2)
+        elif len(Bad) >= 1:
                 print Bad, " Possible bad drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
                 sys.exit(2)
+        elif len(Rebuild) >= 1:
+                print Rebuild
+                sys.exit(0)
         else:
                 print "All good"
                 sys.exit(0)
