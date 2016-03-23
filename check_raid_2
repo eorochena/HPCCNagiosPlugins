@@ -18,6 +18,9 @@ try:
                 elif "property" in i:
                         print "SVN property not configured"
                         sys.exit(2)
+                elif "not found" in i:
+                        print cmd
+                        sys.exit(2)
                 else:
                         continue
         if len(Bad) >= 1:
