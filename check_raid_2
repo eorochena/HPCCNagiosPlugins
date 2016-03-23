@@ -15,8 +15,8 @@ try:
                 elif "Missing" in i:
                         print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
                         sys.exit(2)
-                elif "Property" in i:
-                        print "Property not configured"
+                elif "property" in i:
+                        print "SVN property not configured"
                         sys.exit(2)
                 else:
                         continue
