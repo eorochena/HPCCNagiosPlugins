@@ -4,46 +4,52 @@ import os, sys
 
 IP = sys.argv[1]
 Bad = []
-cmd = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'Drive' '{print $2}'" % IP
-cmdFull = "snmpget -v 2c -t 3 -c ObviouslyNotMyCommunityString %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'STRING:' '{print $2}'" % IP
+Rebuild = []
+cmd = "snmpget -v 2c -t 3 -c M0n1T0r %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'Drive' '{print $2}'" % IP
+cmdFull = "snmpget -v 2c -t 3 -c M0n1T0r %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'STRING:' '{print $2}'" % IP
+cmdRebuildStatus = "snmpget -v 2c -t 3 -c M0n1T0r %s NET-SNMP-EXTEND-MIB::'nsExtendOutputFull.\"check_raid\"'|awk -F'STRING:' '{print $1}'|grep Progress" % IP
 run_cmdFull = os.popen(cmdFull).readlines()
-
+run_cmdRebuildStatus = os.popen(cmdRebuildStatus).readlines()
+#print run_cmdRebuildStatus
 try:
-        if "Drive" in run_cmdFull[0]:
-                run_cmd = os.popen(cmd).readlines()
+	if "Drive" in run_cmdFull[0]:
+		run_cmd = os.popen(cmd).readlines()
+	
+        	for i in run_cmd:
+                	if "Failed" in i or "Unconfigured" in i:
+                        	Bad.append(i.replace('\n', ''))
+			elif "Rebuild" in i and "Rebuild" in run_cmdRebuildStatus[0]:
+				Rebuild.append(i.replace('\n', ''))
+				Rebuild.append(run_cmdRebuildStatus[0].replace('\n', ''))
+                	else:
+                        	continue
+	else:
 
-                for i in run_cmd:
-                        if "Failed" in i or "Unconfigured" in i:
-                                Bad.append(i.replace('\n', ''))
-                        elif "Rebuild" in i:
-                                Rebuild.append(i.replace('\n', ''))
-                        else:
-                                continue
-        else:
-                for i in run_cmdFull:
-                        
-                        if "Missing" in i:
-                                print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
-                                sys.exit(2)
-                        elif "property" in i:
-                                print "SVN property not configured"
-                                sys.exit(2)
-                        elif "not found" in i or "offline" in i:
-                                print cmd
-                                sys.exit(2)
-                                
-        if len(Bad) >= 1 and len(Rebuild) >= 1:
-                print "Something appears to be very wrong, please verify with /opt/MegaRAID/MegaCli/check_drives.sh \n",run_cmd
-                sys.exit(2)
+		for i in run_cmdFull:
+	                if "Missing" in i:
+        	                print "Possible missing drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
+                	        sys.exit(1)
+               		elif "property" in i:
+                        	print run_cmdFull[0]
+                       		sys.exit(1)
+			elif "not found" in i or "offline" in i:
+				print run_cmdFull[0]
+				sys.exit(2)
+			elif run_cmdFull[0] == " \n" or run_cmdFull[0] == "\n":
+				print "Raid Controller not present on this server or SNMP not configured"
+				sys.exit(0)
+	if len(Bad) >= 1 and len(Rebuild) >= 1:
+		print "Something appears to be very wrong, please verify with /opt/MegaRAID/MegaCli/check_drives.sh \n",run_cmd
+		sys.exit(2)
         elif len(Bad) >= 1:
                 print Bad, " Possible bad drive please verify with /opt/MegaRAID/MegaCli/check_drives.sh"
                 sys.exit(2)
-        elif len(Rebuild) >= 1:
-                print Rebuild
-                sys.exit(0)
+	elif len(Rebuild) >= 1:
+		print Rebuild
+		sys.exit(0)
         else:
                 print "All good"
                 sys.exit(0)
 except ValueError:
         print "Unable to connect to server or Raid Controller is unresponsive - if server is healthy verify status with /opt/MegaRAID/MegaCli/check_drives.sh"
-        sys.exit(2)
+        sys.exit(1)
