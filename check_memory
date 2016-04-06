@@ -18,7 +18,7 @@ badCount = 0
 ip_list = []
 memory_count = []
 
-while runs < len(buddies) and runs <= 5:
+while runs < len(buddies) and runs < 5:
 	randomIP = random.choice(buddies)
 	if randomIP in ip_list:
 		continue
